@@ -1,0 +1,56 @@
+const { ethers, parseEther } = require("ethers");
+
+// SaharaAI Testnet configuration
+const RPC_URL = "https://testnet.saharalabs.ai";
+const CHAIN_ID = 313313;
+const CURRENCY_SYMBOL = "SAHARA";
+
+// Private keys
+const privateKeys = [
+  "681111111111",
+  "ec441111111111",
+  "79ce11111111111",
+];
+
+// Generate a random Ethereum address
+function getRandomAddress() {
+  return ethers.Wallet.createRandom().address;
+}
+
+// Send funds from a wallet
+async function sendFunds(wallet, toAddress) {
+  const tx = {
+    to: toAddress,
+    value: parseEther("0.0001"),
+  };
+
+  console.log(`Sending 0.0001 ${CURRENCY_SYMBOL} from ${wallet.address} to ${toAddress}...`);
+  const txResponse = await wallet.sendTransaction(tx);
+  await txResponse.wait();
+  console.log(`Transaction successful: ${txResponse.hash}`);
+}
+
+// Main function
+async function main() {
+  const provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
+
+  for (const privateKey of privateKeys) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+    const randomAddress = getRandomAddress();
+
+    try {
+      await sendFunds(wallet, randomAddress);
+    } catch (error) {
+      console.error(`Error sending funds from ${wallet.address}:`, error);
+    }
+
+    // Wait for 3 seconds before processing the next wallet
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+
+  console.log("Task done");
+}
+
+main().catch((error) => {
+  console.error("Error in main function:", error);
+});
